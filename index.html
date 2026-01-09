@@ -30,11 +30,9 @@
     .btn-ready {background:#38bdf8;}
     .btn-take {background:#f87171;}
 
-    /* телефон */
     .phone {display:none; padding:10px;}
     .phone-columns {display:flex; gap:10px;}
 
-    /* подключение */
     #connectScreen {text-align:center; padding-top:40px;}
   </style>
 </head>
@@ -58,10 +56,8 @@
 
 <!-- 🖥 ПОДКЛЮЧЕНИЕ -->
 <div id="connectScreen">
-  
   <h1>📱 Подключите телефон</h1>
   <div id="qrBig"></div>
-  
   <button onclick="markConnected()">Подключился</button>
 </div>
 
@@ -77,7 +73,6 @@
   </div>
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
@@ -106,7 +101,7 @@ if (isPhone) {
       document.getElementById('board').style.display = 'flex';
     }
   });
-});
+}
 
 function render(ref, el, mode, withButtons=false) {
   ref.on('value', s => {
@@ -147,28 +142,34 @@ render(readyRef, readyList, 'ready', false);
 render(cookingRef, phoneCooking, 'cook', true);
 render(readyRef, phoneReady, 'ready', true);
 
+function addCooking() {
+  const n = orderNumber.value.trim();
+  if (!n) return;
+  cookingRef.push(n);
+  orderNumber.value = '';
+}
+
+function toReady(key, val) {
+  cookingRef.child(key).remove();
+  readyRef.push(val);
+}
+
+function take(key) {
+  readyRef.child(key).remove();
+}
+
 function markConnected() {
   connectedRef.set(true);
-
-const url = 'https://slava253.github.io/order-board/?control=1';
-const qr = document.createElement('img');
-qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' + encodeURIComponent(url);
-qr.alt = 'QR code для телефона';
-document.getElementById('qrBig').appendChild(qr);
-</script>
-</body>
-</html>
-
+}
 
 // === QR CODE (только для компьютера) ===
 if (!isPhone) {
   const url = 'https://slava253.github.io/order-board/?control=1';
   const qr = document.createElement('img');
-  qr.src =
-    'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' +
-    encodeURIComponent(url);
+  qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' + encodeURIComponent(url);
   qr.alt = 'QR code для телефона';
   document.getElementById('qrBig').appendChild(qr);
 }
-
-
+</script>
+</body>
+</html>
