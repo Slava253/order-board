@@ -54,14 +54,6 @@
   </div>
 </div>
 
-<!-- 🖥 ПОДКЛЮЧЕНИЕ -->
-<div id="connectScreen">
-  
-  <h1>📱 Подключите телефон</h1>
-  <div id="qrBig"></div>
-  <button onclick="markConnected()">Подключился</button>
-</div>
-
 <!-- 🖥 ТАБЛО -->
 <div id="board" class="split" style="display:none">
   
@@ -89,7 +81,7 @@ const db = firebase.database();
 
 const cookingRef = db.ref('cooking');
 const readyRef = db.ref('ready');
-const connectedRef = db.ref('connected');
+
 
 
 const params = new URLSearchParams(location.search);
@@ -97,14 +89,10 @@ const isPhone = params.get('control') === '1' && window.innerWidth <= 600; // у
 
 if (isPhone) {
   document.getElementById('phoneUI').style.display = 'block';
-  document.getElementById('connectScreen').style.display = 'none';
   document.getElementById('board').style.display = 'none';
 } else {
-  connectedRef.on('value', s => {
-    if (s.val()) {
-      document.getElementById('connectScreen').style.display = 'none';
-      document.getElementById('board').style.display = 'flex';
-    }
+  document.getElementById('board').style.display = 'flex';
+}
   });
 }
 
@@ -186,9 +174,7 @@ function take(key) {
   readyRef.child(key).remove();
 }
 
-function markConnected() {
-  connectedRef.set(true);
-}
+
 
 // === АВТО-ДОБАВЛЕНИЕ ЗАКАЗОВ КАЖДЫЕ 20 СЕК ===
 if (!isPhone) {
@@ -212,15 +198,7 @@ if (!isPhone) {
   }, 20000);
 }
 
-// === QR CODE (только для компьютера) ===
-if (!isPhone) {
-  const url = 'https://slava253.github.io/order-board/?control=1';
-  const qr = document.createElement('img');
-  qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' + encodeURIComponent(url);
-  qr.alt = 'QR code для телефона';
-  document.getElementById('qrBig').appendChild(qr);
-}
-</script>
-</body>
-</html>
+
+
+
 
