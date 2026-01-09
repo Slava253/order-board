@@ -92,7 +92,8 @@ const readyRef = db.ref('ready');
 const connectedRef = db.ref('connected');
 
 
-const isPhone = new URLSearchParams(location.search).get('control') === '1';
+const params = new URLSearchParams(location.search);
+const isPhone = params.get('control') === '1' && window.innerWidth <= 600;
 
 if (isPhone) {
   document.getElementById('phoneUI').style.display = 'block';
@@ -217,5 +218,3 @@ if (!isPhone) {
 </script>
 </body>
 </html>
-
-
