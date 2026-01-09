@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Табло заказов (онлайн)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {font-family: Arial, sans-serif; background:#000; color:#fff; margin:0;}
+    input, button {width:100%; padding:14px; margin-bottom:10px; font-size:18px;}
+    button {background:#22c55e; border:none; border-radius:8px; color:#000; cursor:pointer; font-weight:bold;}
+
+    .split {display:flex; height:100vh;}
+    .column {flex:1; padding:20px; box-sizing:border-box;}
+    .column h1 {text-align:center; font-size:32px; margin-bottom:10px;}
+    .cooking {background:#111;}
+    .ready {background:#020617;}
+
+    .order {
+      font-size:32px;
+      font-weight:bold;
+      background:#16a34a;
+      color:#000;
+      padding:14px;
+      border-radius:12px;
+      margin-bottom:10px;
+      text-align:center;
+    }
+
+    .order-buttons {display:flex; gap:10px; margin-top:10px;}
+    .btn-ready {background:#38bdf8;}
+    .btn-take {background:#f87171;}
+
+    /* телефон */
+    .phone {display:none; padding:10px;}
+    .phone-columns {display:flex; gap:10px;}
+
+    /* подключение */
+    #connectScreen {text-align:center; padding-top:40px;}
+  </style>
+</head>
+<body>
+
+<!-- 📱 ТЕЛЕФОН -->
+<div id="phoneUI" class="phone">
+  <input id="orderNumber" placeholder="Номер заказа" />
+  <button onclick="addCooking()">Готовится</button>
+  <div class="phone-columns">
+    <div class="column cooking">
+      <h1>Готовится</h1>
+      <div id="phoneCooking"></div>
+    </div>
+    <div class="column ready">
+      <h1>Готов</h1>
+      <div id="phoneReady"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 🖥 ПОДКЛЮЧЕНИЕ -->
+<div id="connectScreen">
+  
+  <h1>📱 Подключите телефон</h1>
+  <div id="qrBig"></div>
+  
+  <button onclick="markConnected()">Подключился</button>
+</div>
+
+<!-- 🖥 ТАБЛО -->
+<div id="board" class="split" style="display:none">
+  <div class="column cooking">
+    <h1>Готовится</h1>
+    <div id="cookingList"></div>
+  </div>
+  <div class="column ready">
+    <h1>Готов</h1>
+    <div id="readyList"></div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyB3_VFBQzqZkV2lOyf_2rieD9lPSWqEee0",
+  authDomain: "order-board-91ee0.firebaseapp.com",
+  databaseURL: "https://order-board-91ee0-default-rtdb.firebaseio.com",
+  projectId: "order-board-91ee0",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const cookingRef = db.ref('cooking');
+const readyRef = db.ref('ready');
+const connectedRef = db.ref('connected');
+
+const isPhone = new URLSearchParams(location.search).get('control') === '1';
+
+if (isPhone) {
+  document.getElementById('phoneUI').style.display = 'block';
+  document.getElementById('connectScreen').style.display = 'none';
+} else {
+  connectedRef.on('value', s => {
+    if (s.val()) {
+      document.getElementById('connectScreen').style.display = 'none';
+      document.getElementById('board').style.display = 'flex';
+    }
+  });
+});
+
+function render(ref, el, mode, withButtons=false) {
+  ref.on('value', s => {
+    el.innerHTML = '';
+    s.forEach(c => {
+      const d = document.createElement('div');
+      d.className = 'order';
+      d.textContent = '№ ' + c.val();
+
+      if (withButtons) {
+        const wrap = document.createElement('div');
+        wrap.className = 'order-buttons';
+
+        if (mode === 'cook') {
+          const b1 = document.createElement('button');
+          b1.textContent = 'Готов';
+          b1.className = 'btn-ready';
+          b1.onclick = () => toReady(c.key, c.val());
+          wrap.appendChild(b1);
+        }
+        if (mode === 'ready') {
+          const b2 = document.createElement('button');
+          b2.textContent = 'Заказ забрали';
+          b2.className = 'btn-take';
+          b2.onclick = () => take(c.key);
+          wrap.appendChild(b2);
+        }
+        d.appendChild(wrap);
+      }
+
+      el.appendChild(d);
+    });
+  });
+}
+
+render(cookingRef, cookingList, 'cook', false);
+render(readyRef, readyList, 'ready', false);
+render(cookingRef, phoneCooking, 'cook', true);
+render(readyRef, phoneReady, 'ready', true);
+
+function markConnected() {
+  connectedRef.set(true);
+}
+
+);
+}
+
+);
+});
+}
+
+const url = 'https://slava253.github.io/order-board/?control=1';
+const qr = document.createElement('img');
+qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' + encodeURIComponent(url);
+qr.alt = 'QR code для телефона';
+document.getElementById('qrBig').appendChild(qr);
+</script>
+</body>
+</html>
