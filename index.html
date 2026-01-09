@@ -63,6 +63,9 @@
 
 <!-- 🖥 ТАБЛО -->
 <div id="board" class="split" style="display:none">
+  <div style="position:fixed;top:10px;left:50%;transform:translateX(-50%);font-size:24px;font-weight:bold;color:#22c55e;z-index:10">
+    Заказов сегодня: <span id="dailyCount">0</span>
+  </div>
   <div class="column cooking">
     <h1>Готовится</h1>
     <div id="cookingList"></div>
@@ -88,6 +91,7 @@ const db = firebase.database();
 const cookingRef = db.ref('cooking');
 const readyRef = db.ref('ready');
 const connectedRef = db.ref('connected');
+const counterRef = db.ref('dailyCounter');
 
 const isPhone = new URLSearchParams(location.search).get('control') === '1';
 
@@ -109,7 +113,9 @@ function render(ref, el, mode, withButtons=false) {
     s.forEach(c => {
       const d = document.createElement('div');
       d.className = 'order';
-      d.textContent = '№ ' + c.val();
+      const value = c.val();
+      const num = typeof value === 'object' ? value.number : value;
+      d.textContent = '№ ' + num;
 
       if (withButtons) {
         const wrap = document.createElement('div');
@@ -139,11 +145,28 @@ function render(ref, el, mode, withButtons=false) {
 
 render(cookingRef, cookingList, 'cook', false);
 render(readyRef, readyList, 'ready', false);
+
+// автоудаление готовых заказов через 5 минут
+readyRef.on('value', snap => {
+  const now = Date.now();
+  snap.forEach(c => {
+    const v = c.val();
+    if (v && v.time && now - v.time > 5 * 60 * 1000) {
+      readyRef.child(c.key).remove();
+    }
+  });
+});
 render(cookingRef, phoneCooking, 'cook', true);
 render(readyRef, phoneReady, 'ready', true);
 
-function addCooking() {
-  const n = orderNumber.value.trim();
+// отображение счётчика
+counterRef.on('value', s => {
+  const el = document.getElementById('dailyCount');
+  if (el) el.textContent = s.val() || 0;
+});
+
+function addCooking(num) {
+  const n = num || orderNumber.value.trim();
   if (!n) return;
   cookingRef.push(n);
   orderNumber.value = '';
@@ -151,7 +174,8 @@ function addCooking() {
 
 function toReady(key, val) {
   cookingRef.child(key).remove();
-  readyRef.push(val);
+  // сохраняем заказ с таймстампом
+  readyRef.push({ number: val, time: Date.now() });
 }
 
 function take(key) {
@@ -160,6 +184,28 @@ function take(key) {
 
 function markConnected() {
   connectedRef.set(true);
+}
+
+// === АВТО-ДОБАВЛЕНИЕ ЗАКАЗОВ КАЖДЫЕ 20 СЕК ===
+if (!isPhone) {
+  // инициализация счётчика
+  counterRef.once('value').then(s => {
+    if (!s.exists()) counterRef.set(0);
+  });
+
+  setInterval(() => {
+    let n = Math.floor(Math.random() * 1000); // 0–999
+    let formatted;
+    if (n < 10) {
+      formatted = '00' + n;       // 1 цифра → 00X
+    } else if (n < 100) {
+      formatted = '0' + n;        // 2 цифры → 0XX
+    } else {
+      formatted = n.toString();   // 3 цифры → XXX
+    }
+    cookingRef.push(formatted);
+    counterRef.transaction(v => (v || 0) + 1);
+  }, 20000);
 }
 
 // === QR CODE (только для компьютера) ===
@@ -173,3 +219,5 @@ if (!isPhone) {
 </script>
 </body>
 </html>
+
+
