@@ -149,14 +149,6 @@ render(readyRef, phoneReady, 'ready', true);
 
 function markConnected() {
   connectedRef.set(true);
-}
-
-);
-}
-
-);
-});
-}
 
 const url = 'https://slava253.github.io/order-board/?control=1';
 const qr = document.createElement('img');
@@ -166,3 +158,17 @@ document.getElementById('qrBig').appendChild(qr);
 </script>
 </body>
 </html>
+
+
+// === QR CODE (только для компьютера) ===
+if (!isPhone) {
+  const url = 'https://slava253.github.io/order-board/?control=1';
+  const qr = document.createElement('img');
+  qr.src =
+    'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' +
+    encodeURIComponent(url);
+  qr.alt = 'QR code для телефона';
+  document.getElementById('qrBig').appendChild(qr);
+}
+
+
