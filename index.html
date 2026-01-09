@@ -38,7 +38,7 @@
 </head>
 <body>
 
-<!-- 📱 ТЕЛЕФОН -->
+<!-- 📱 ТЕЛЕФОН (УПРАВЛЕНИЕ) -->
 <div id="phoneUI" class="phone">
   <input id="orderNumber" placeholder="Номер заказа" />
   <button onclick="addCooking()">Готовится</button>
@@ -93,11 +93,12 @@ const connectedRef = db.ref('connected');
 
 
 const params = new URLSearchParams(location.search);
-const isPhone = params.get('control') === '1' && window.innerWidth <= 600;
+const isPhone = params.get('control') === '1' && window.innerWidth <= 600; // управление ТОЛЬКО с телефона
 
 if (isPhone) {
   document.getElementById('phoneUI').style.display = 'block';
   document.getElementById('connectScreen').style.display = 'none';
+  document.getElementById('board').style.display = 'none';
 } else {
   connectedRef.on('value', s => {
     if (s.val()) {
@@ -145,6 +146,10 @@ function render(ref, el, mode, withButtons=false) {
 
 render(cookingRef, cookingList, 'cook', false);
 render(readyRef, readyList, 'ready', false);
+
+// управление с телефона
+render(cookingRef, phoneCooking, 'cook', true);
+render(readyRef, phoneReady, 'ready', true);
 
 // автоудаление готовых заказов через 5 минут
 readyRef.on('value', snap => {
@@ -218,3 +223,4 @@ if (!isPhone) {
 </script>
 </body>
 </html>
+
