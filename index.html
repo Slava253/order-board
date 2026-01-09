@@ -56,6 +56,7 @@
 
 <!-- 🖥 ПОДКЛЮЧЕНИЕ -->
 <div id="connectScreen">
+  
   <h1>📱 Подключите телефон</h1>
   <div id="qrBig"></div>
   <button onclick="markConnected()">Подключился</button>
@@ -63,9 +64,7 @@
 
 <!-- 🖥 ТАБЛО -->
 <div id="board" class="split" style="display:none">
-  <div style="position:fixed;top:10px;left:50%;transform:translateX(-50%);font-size:24px;font-weight:bold;color:#22c55e;z-index:10">
-    Заказов сегодня: <span id="dailyCount">0</span>
-  </div>
+  
   <div class="column cooking">
     <h1>Готовится</h1>
     <div id="cookingList"></div>
@@ -91,7 +90,7 @@ const db = firebase.database();
 const cookingRef = db.ref('cooking');
 const readyRef = db.ref('ready');
 const connectedRef = db.ref('connected');
-const counterRef = db.ref('dailyCounter');
+
 
 const isPhone = new URLSearchParams(location.search).get('control') === '1';
 
@@ -160,8 +159,7 @@ render(cookingRef, phoneCooking, 'cook', true);
 render(readyRef, phoneReady, 'ready', true);
 
 // отображение счётчика
-counterRef.on('value', s => {
-  const el = document.getElementById('dailyCount');
+
   if (el) el.textContent = s.val() || 0;
 });
 
@@ -219,5 +217,3 @@ if (!isPhone) {
 </script>
 </body>
 </html>
-
-
